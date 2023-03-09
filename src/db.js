@@ -2,9 +2,9 @@ require('dotenv').config();
 const { Sequelize } = require('sequelize');
 const fs = require('fs');
 const path = require('path');
-const {
-  DB_USER, DB_PASSWORD, DB_HOST,DB_NAME, DB_PORT
-} = process.env;
+// const {
+//   DB_USER, DB_PASSWORD, DB_HOST,DB_NAME, DB_PORT
+// } = process.env;
 
 const sequelize = new Sequelize(`postgresql://postgres:Cw6e6rW7UeAy4c841DT0@containers-us-west-114.railway.app:7101/railway`, {
   logging: false, // set to console.log to see the raw SQL queries
