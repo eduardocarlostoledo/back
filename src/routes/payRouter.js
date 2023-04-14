@@ -2,7 +2,7 @@ const { Router } = require("express");
 const payRouter = Router();
 const mercadopago = require("mercadopago");
 const { deleteAllCart } = require("../controllers/cartController");
-const enviarMail = require("../mail/nodemail");
+//const enviarMail = require("../mail/nodemail");
 const {
   postOrder,
   updateProductStock,
@@ -104,7 +104,7 @@ payRouter.get("/feedback/success", async function (req, res) {
       product_amount,
       product_unit_price
     );
-    await enviarMail(product_description, total_order_price, buyer_email, statusId);
+    //await enviarMail(product_description, total_order_price, buyer_email, statusId);
 
     //Hacer aca la funcion
     arrayProducts.map((prod) => updateProductStock(prod.id, prod.amount));
@@ -174,7 +174,7 @@ payRouter.get("/feedback/pending", async function (req, res) {
       product_amount,
       product_unit_price
     );
-    await enviarMail(product_description, total_order_price, buyer_email, statusId);
+    //await enviarMail(product_description, total_order_price, buyer_email, statusId);
     await updateProductStock(prodId, product_amount);
     console.log("SE HA DESCONTADO", prodId, product_amount, "DEL STOCK");
 
