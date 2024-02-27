@@ -1,3 +1,4 @@
+const { User } = require('../db')
 const { Router } = require('express');
 const { postProduct,
   getProducts,
@@ -21,14 +22,43 @@ const productRouter = Router()
 
 
 productRouter.post('/', async (req,res) => {
+  // try {
+  //   const userObject = JSON.parse(req.body.userEmail);
+  //   const email = userObject.email;
+  //   //console.log(email); // Imprime 'eduardocarlostoledo@gmail.com'
+  //   const user = await User.findOne({ where: { email: `${email}` } });
+  //   if (user.admin === true)    {
+  //     let product = req.body;
+  //   //console.log(product);
+  //   const newProduct = await postProduct(product,req.files.image, email);
+  //   res.status(201).send({ status: "OK", data: newProduct });
+  // }
+  // } catch (error) {
+  //   return res.status(400).send({ error: error.message });
+  // }
+
   try {
-    let product = req.body;
-    console.log(product);
-    const newProduct = await postProduct(product,req.files.image);
+    const userObject = JSON.parse(req.body.userEmail);
+    const email = userObject.email;
+
+    const user = await User.findOne({ where: { email: `${email}` } });
+    if (!user || !user.admin) {
+      return res.status(403).send({ error: "User is not an admin" });
+    }
+
+    const product = req.body;
+    const image = req.files.image;
+
+    if (!product || !image) {
+      return res.status(400).send({ error: "Invalid product data" });
+    }
+    console.log("El usuario", email, "ha creado un producto")
+    const newProduct = await postProduct(product, image);
     res.status(201).send({ status: "OK", data: newProduct });
   } catch (error) {
-    return res.status(400).send({ error: error.message });
+    return res.status(500).send({ error: error.message });
   }
+
 });
 
 productRouter.put('/:id', async (req,res) => {
