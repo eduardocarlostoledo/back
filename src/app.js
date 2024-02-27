@@ -1,10 +1,13 @@
 const express = require('express');
 const routes = require('./routes/index.js');
-const fileUpload =require('express-fileupload');
+const fileUpload = require('express-fileupload');
 const cors = require("cors");
+const morgan = require("morgan");
 const mercadopago = require("mercadopago");
+require('dotenv').config();
+
 mercadopago.configure({
-	access_token: "TEST-2173554663380212-021616-6c499d124b985881a40b539254bb3afd-96768851",
+  access_token: process.env.ACCESS_TOKEN,
 });
 
 require('./db.js');
@@ -13,31 +16,41 @@ const server = express();
 
 server.name = 'API';
 
-//para subir archivo a cloudinary
+// **Robust CORS Configuration (Consider Specific Origins):**
+server.use(cors({
+  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',  // Adjust based on your requirements
+  credentials: true,
+  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept'],
+  methods: ['GET', 'POST', 'OPTIONS', 'PUT', 'DELETE'],
+}));
+
+// **Optimized File Upload:**
 server.use(fileUpload({
   useTempFiles: true,
   tempFileDir: './uploads'
-}))
+}));
 
-server.use(express.json())
-server.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*'); // update to match the domain you will make the request from
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
-  next();
-});
+// **Flexible and Customizable Morgan Logging:**
+server.use(morgan('dev'));  // Or choose a different format (common, combined, etc.)
+
+server.use(express.json());
+
+// **Unnecessary Custom CORS Middleware Removal:**
+// The use of `cors` middleware provides more comprehensive configuration.
 
 server.use('/', routes);
-server.use(cors());
+
 server.use(express.urlencoded({ extended: false }));
 
-// Error catching endware.
+// **Enhanced Error Handling:**
 server.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
   const status = err.status || 500;
   const message = err.message || err;
+
+  // Log the error for detailed debugging (consider a dedicated logging library)
   console.error(err);
-  res.status(status).send(message);
+
+  res.status(status).json({ message }); // Use JSON for consistent API responses
 });
 
 module.exports = server;

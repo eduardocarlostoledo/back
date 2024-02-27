@@ -158,15 +158,44 @@ const loginGoogle = async (req, res) => {
   }
 }
 
+// const loginUser = async (req, res) => {
+//   try {
+//     const { email, password } = req.body;
+//     const user = await User.findOne({ where: { email: `${email}` } });
+//     console.log("intento de inicio de sesion", email, password)
+//     if (!user) return res.json({ msg: 'User not found',success: false, });
+
+//     const checkPassword = await compare(password, user.password);
+
+//     if (checkPassword) {
+//       console.log("intento de inicio de sesion exitoso", email, password)
+//       res.status(200).send({
+//         data: user,
+//         success: true,
+//       });
+//     }
+//     if (!checkPassword) {
+//       return res.json({ msg: 'Invalid password', success: false, });
+
+
+//     }
+//   } catch (error) {
+//     return res.json({ msg: `Error 404 - ${error}` });
+//   }
+// };
+
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ where: { email: `${email}` } });
+    console.log("intento de inicio de sesion", email, password)
     if (!user) return res.json({ msg: 'User not found',success: false, });
 
     const checkPassword = await compare(password, user.password);
 
     if (checkPassword) {
+      console.log("intento de inicio de sesion exitoso", email, password)
+      console.log("IP del cliente:", req.connection.remoteAddress); // Imprime la IP del cliente
       res.status(200).send({
         data: user,
         success: true,
@@ -174,13 +203,12 @@ const loginUser = async (req, res) => {
     }
     if (!checkPassword) {
       return res.json({ msg: 'Invalid password', success: false, });
-
-
     }
   } catch (error) {
     return res.json({ msg: `Error 404 - ${error}` });
   }
 };
+
 
 const deleteUser = async (req, res) => {
   const { id } = req.params;
