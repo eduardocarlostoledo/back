@@ -18,7 +18,7 @@ server.name = 'API';
 
 // **Robust CORS Configuration (Consider Specific Origins):**
 server.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',  // Adjust based on your requirements
+  origin: process.env.CORS_ORIGIN || 'http://localhost:3000' || "https://railway.app" ||  "https://netlify.app" || "https://back-production-148d.up.railway.app" ||  "https://storecomputer.netlify.app", // Adjust based on your requirements
   credentials: true,
   allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept'],
   methods: ['GET', 'POST', 'OPTIONS', 'PUT', 'DELETE'],
