@@ -1,56 +1,104 @@
-const express = require('express');
-const routes = require('./routes/index.js');
-const fileUpload = require('express-fileupload');
+const express = require("express");
+const routes = require("./routes/index.js");
+const fileUpload = require("express-fileupload");
 const cors = require("cors");
 const morgan = require("morgan");
 const mercadopago = require("mercadopago");
-require('dotenv').config();
+require("dotenv").config();
 
 mercadopago.configure({
   access_token: process.env.ACCESS_TOKEN,
 });
 
-require('./db.js');
+require("./db.js");
 
 const server = express();
 
-server.name = 'API';
+server.name = "API";
 
-// **Robust CORS Configuration (Consider Specific Origins):**
-server.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000' || "https://storecomputer.netlify.app/" || "https://railway.app" ||  "https://netlify.app" || "https://back-production-148d.up.railway.app" ||  "https://storecomputer.netlify.app" || 'http://localhost:3001' || "https://back-production-148d.up.railway.app/users" || "https://back-production-148d.up.railway.app/cart"|| "https://storecomputer.netlify.app"|| "https://www.mercadolibre.com"|| "https://back-production-148d.up.railway.app/products/types"|| "https://back-production-148d.up.railway.app/products" , // Adjust based on your requirements
-  credentials: true,
-  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept'],
-  methods: ['GET', 'POST', 'OPTIONS', 'PUT', 'DELETE'],
-}));
+// **CORS Configuration**
+const allowedOrigins = [
+  "http://localhost:3000", // Local development
+  "http://localhost:3001", // Another local environment
+  "http://localhost:5173", // Local development with Vite
+  "https://localhost", // Local environment, generic
+  "https://storecomputer.netlify.app", // Netlify deployment
+  "https://elgatonegropremium.netlify.app", // Netlify deployment for El Gato Negro
+  "https://railway.app", // Railway platform
+  "https://netlify.app", // Netlify platform
+  "https://back-production-148d.up.railway.app", // Railway backend production
+  "https://back-production-148d.up.railway.app/users", // Specific route in Railway backend
+  "https://back-production-148d.up.railway.app/cart", // Specific route in Railway backend
+  "https://back-production-148d.up.railway.app/products/types", // Specific route in Railway backend
+  "https://back-production-148d.up.railway.app/products", // Specific route in Railway backend
+  "https://www.mercadolibre.com", // Mercado Libre
+  "https://elgatonegropremium-back-production.up.railway.app/users/auth/google", // Google Auth callback (El Gato Negro)
+  "https://accounts.google.com/o/oauth2/v2/auth/oauthchooseaccount", // Google OAuth
+  "https://accounts.google.com", // Google OAuth service
+  "https://sdk.mercadopago.com", // MercadoPago SDK
+  "https://cdn.jsdelivr.net", // JSDelivr CDN
+  "https://opencollective.com", // Open Collective
+  "https://github.com", // GitHub
+  "https://eslint.org", // ESLint website
+  "https://vitejs.dev", // Vite official site
+  "https://www.instagram.com", // Instagram
+  "https://www.facebook.com", // Facebook
+  "https://web.whatsapp.com", // WhatsApp Web
+  "https://cdn-icons-png.flaticon.com", // Flaticon icon CDN
+  "https://wa.me", // WhatsApp API
+  "https://login.live.com", // Microsoft login
+  "https://elgatonegropremium-back-production.up.railway.app", // El Gato Negro backend (API)
+  "https://res.cloudinary.com", // Cloudinary image hosting
+  "https://api.mercadopago.com", // MercadoPago API
+  "https://www.google.com", // Google search
+];
 
-// **Optimized File Upload:**
-server.use(fileUpload({
-  useTempFiles: true,
-  tempFileDir: './uploads'
-}));
+// Configuración de CORS con una función personalizada para verificar el origen
+server.use(
+  cors({
+    origin: (origin, callback) => {
+      // Permite solicitudes sin origen (por ejemplo, desde Postman)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("CORS no permitido desde este origen"), false);
+      }
+    },
+    credentials: true,
+    allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept"],
+    methods: ["GET", "POST", "OPTIONS", "PUT", "DELETE"],
+  })
+);
 
-// **Flexible and Customizable Morgan Logging:**
-server.use(morgan('dev'));  // Or choose a different format (common, combined, etc.)
+// **File Upload Setup**
+server.use(
+  fileUpload({
+    useTempFiles: true,
+    tempFileDir: "./uploads",
+  })
+);
 
+// **Morgan Logging Setup**
+server.use(morgan("dev")); // Puedes usar otro formato de log si prefieres
+
+// **JSON Body Parsing**
 server.use(express.json());
 
-// **Unnecessary Custom CORS Middleware Removal:**
-// The use of `cors` middleware provides more comprehensive configuration.
+// **Routes**
+server.use("/", routes);
 
-server.use('/', routes);
-
+// **URL-encoded Form Parsing**
 server.use(express.urlencoded({ extended: false }));
 
-// **Enhanced Error Handling:**
-server.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
+// **Enhanced Error Handling**
+server.use((err, req, res, next) => {
   const status = err.status || 500;
   const message = err.message || err;
 
-  // Log the error for detailed debugging (consider a dedicated logging library)
+  // Log the error for debugging
   console.error(err);
 
-  res.status(status).json({ message }); // Use JSON for consistent API responses
+  res.status(status).json({ message });
 });
 
 module.exports = server;
